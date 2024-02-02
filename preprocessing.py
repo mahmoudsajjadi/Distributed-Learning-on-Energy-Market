@@ -1,4 +1,7 @@
 import pandas as pd
+import gc
+
+del gc.garbage[:]
 
 data_path = 'Datasets/PECAN_St/1minute_data_california/1minute_data_california.csv'
 chunk_size = 100000  # Adjust the chunk size according to your memory constraints
@@ -23,6 +26,14 @@ for chunk in chunks:
         else:
             dfs_by_home_id[home_id] = home_data
 
+# Process each dataframe to add total_consumption column and select required columns
+for home_id, df in dfs_by_home_id.items():
+    print(f'home_id: {home_id}')
+    df['total_consumption'] = df['grid'].fillna(0) + df['solar'].fillna(0) + df['solar2'].fillna(0) + df['battery1'].fillna(0)
+    dfs_by_home_id[home_id] = df[['dataid', 'localminute', 'leg1v', 'leg2v', 'total_consumption']]
+    dfs_by_home_id[home_id].sort_values(by='localminute')
+
+# Print information for each home
 for home_id, df in dfs_by_home_id.items():
     print(f"Home ID: {home_id}, Number of rows: {len(df)}")
 
